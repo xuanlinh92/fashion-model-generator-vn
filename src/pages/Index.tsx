@@ -3,6 +3,7 @@ import { Upload, Wand2, Download, Sparkles, Camera, Palette, Hash, X } from 'luc
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 
@@ -16,14 +17,14 @@ const Index = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fashionStyles = [
-    { id: 'vintage', name: 'Vintage', description: 'Cổ điển, retro', color: 'from-amber-400 to-orange-500' },
-    { id: 'modern', name: 'Modern', description: 'Hiện đại, tối giản', color: 'from-gray-400 to-gray-600' },
-    { id: 'casual', name: 'Casual', description: 'Thoải mái, đời thường', color: 'from-blue-400 to-blue-600' },
-    { id: 'formal', name: 'Formal', description: 'Trang trọng, lịch sự', color: 'from-purple-400 to-purple-600' },
-    { id: 'bohemian', name: 'Bohemian', description: 'Tự do, nghệ thuật', color: 'from-pink-400 to-pink-600' },
-    { id: 'gothic', name: 'Gothic', description: 'Bí ẩn, cá tính', color: 'from-gray-700 to-black' },
-    { id: 'minimalist', name: 'Minimalist', description: 'Tối giản, tinh tế', color: 'from-green-400 to-green-600' },
-    { id: 'street', name: 'Street Style', description: 'Đường phố, năng động', color: 'from-red-400 to-red-600' }
+    { id: 'vintage', name: 'Vintage', description: 'Cổ điển, retro' },
+    { id: 'modern', name: 'Modern', description: 'Hiện đại, tối giản' },
+    { id: 'casual', name: 'Casual', description: 'Thoải mái, đời thường' },
+    { id: 'formal', name: 'Formal', description: 'Trang trọng, lịch sự' },
+    { id: 'bohemian', name: 'Bohemian', description: 'Tự do, nghệ thuật' },
+    { id: 'gothic', name: 'Gothic', description: 'Bí ẩn, cá tính' },
+    { id: 'minimalist', name: 'Minimalist', description: 'Tối giản, tinh tế' },
+    { id: 'street', name: 'Street Style', description: 'Đường phố, năng động' }
   ];
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,6 +117,11 @@ const Index = () => {
     setExpandedImage(null);
   };
 
+  const getSelectedStyleName = () => {
+    const style = fashionStyles.find(s => s.id === selectedStyle);
+    return style ? `${style.name} - ${style.description}` : '';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       {/* Header */}
@@ -191,25 +197,29 @@ const Index = () => {
                 Chọn phong cách thời trang
               </h2>
               
-              <div className="grid grid-cols-2 gap-3">
-                {fashionStyles.map((style) => (
-                  <div
-                    key={style.id}
-                    className={`p-4 rounded-lg cursor-pointer transition-all transform hover:scale-105 ${
-                      selectedStyle === style.id
-                        ? 'ring-2 ring-purple-500 shadow-lg'
-                        : 'hover:shadow-md'
-                    }`}
-                    onClick={() => setSelectedStyle(style.id)}
-                  >
-                    <div className={`h-16 bg-gradient-to-r ${style.color} rounded-lg mb-3 flex items-center justify-center`}>
-                      <Sparkles className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-medium text-gray-800">{style.name}</h3>
-                    <p className="text-xs text-gray-600">{style.description}</p>
-                  </div>
-                ))}
-              </div>
+              <Select value={selectedStyle} onValueChange={setSelectedStyle}>
+                <SelectTrigger className="w-full h-12 bg-white border-purple-200 focus:ring-purple-500">
+                  <SelectValue placeholder="Chọn phong cách thời trang..." />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-purple-200 shadow-xl z-50">
+                  {fashionStyles.map((style) => (
+                    <SelectItem key={style.id} value={style.id} className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-800">{style.name}</span>
+                        <span className="text-xs text-gray-600">{style.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {selectedStyle && (
+                <div className="mt-3 p-3 bg-purple-50 rounded-lg">
+                  <p className="text-sm text-purple-700">
+                    <span className="font-medium">Đã chọn:</span> {getSelectedStyleName()}
+                  </p>
+                </div>
+              )}
             </Card>
 
             {/* Quantity Selection */}
