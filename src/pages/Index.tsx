@@ -85,23 +85,38 @@ const Index = () => {
       const prefix = "data:image";
       let images: string[] = [];
 
-      images = webhookArray.map((item: any, idx: number) => {
-        let imgStr = "";
-
-        // Lấy ra thuộc tính Image (hoặc các field khác nếu cần)
+      // NEW: flatten mọi ảnh xuất hiện trong object/mảng lồng nhau
+      const extractImages = (item: any): string[] => {
+        let arr: string[] = [];
+        if (!item) return arr;
+        // Nếu là string
         if (typeof item === "string") {
-          imgStr = item.trim();
-        } else if (item && typeof item === "object") {
-          imgStr =
-            (item.Image && typeof item.Image === "string" && item.Image.trim()) ||
-            (item.image && typeof item.image === "string" && item.image.trim()) ||
-            (item.url && typeof item.url === "string" && item.url.trim()) ||
-            (item.base64 && typeof item.base64 === "string" && item.base64.trim()) ||
-            (item.data && typeof item.data === "string" && item.data.trim()) ||
-            "";
+          arr.push(item.trim());
         }
+        // Nếu là array lồng - đệ quy
+        else if (Array.isArray(item)) {
+          item.forEach((sub) => {
+            arr = arr.concat(extractImages(sub));
+          });
+        }
+        // Nếu là object
+        else if (typeof item === "object") {
+          // Lặp qua các trường phổ biến có thể chứa ảnh
+          ["Image", "image", "url", "base64", "data", "images", "output"].forEach((field) => {
+            if (item[field]) {
+              arr = arr.concat(extractImages(item[field]));
+            }
+          });
+        }
+        return arr;
+      };
 
-        // Remove repeated base64 prefix if any
+      // Lấy tất cả ảnh từ toàn bộ array
+      images = webhookArray.flatMap((item) => extractImages(item));
+
+      // Xử lý prefix cho từng ảnh
+      images = images.map((imgStr, idx) => {
+        // Remove repeated base64 prefix nếu có
         while (
           imgStr.startsWith("data:image") &&
           imgStr.slice(20, 36).includes("data:image")
@@ -110,20 +125,14 @@ const Index = () => {
           if (repPos > 0) imgStr = imgStr.slice(repPos);
           else break;
         }
-
-        // Nếu là link công khai thì dùng luôn
         const isPublicUrl = /^https?:\/\//i.test(imgStr);
         let displayImg = imgStr;
-
-        // Nếu là base64, đảm bảo prefix có mặt
         if (!isPublicUrl) {
           displayImg = imgStr.startsWith(prefix) ? imgStr : "data:image/png;base64," + imgStr;
         }
-
-        // Debug log
+        // Log
         console.log(`[DEBUG][array] Ảnh [${idx}]:`, displayImg ? displayImg.substring(0, 40) : "EMPTY", "(length:", displayImg.length, ")");
-
-        // Kiểm tra hợp lệ ảnh (bắt buộc phải có và có độ dài hợp lý)
+        // Kiểm tra hợp lệ
         if (
           (!displayImg || displayImg.length < 100) ||
           (!isPublicUrl && !displayImg.startsWith(prefix))
@@ -135,7 +144,6 @@ const Index = () => {
           });
           return PLACEHOLDER_IMAGE;
         }
-
         return displayImg;
       });
 
