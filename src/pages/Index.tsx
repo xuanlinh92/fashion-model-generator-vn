@@ -11,6 +11,9 @@ import ImageModal from '@/components/ImageModal';
 
 const N8N_WEBHOOK_URL = "https://auto.ecomjob.vn/webhook-test/4f6511ec-1368-4a92-bf43-52b78ddee93b";
 
+const PLACEHOLDER_IMAGE =
+  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80";
+
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>('');
@@ -38,7 +41,6 @@ const Index = () => {
     setIsProcessing(true);
     setResultImages([]);
 
-    // Hiện toast chờ, lưu lại id để tắt sau khi có kết quả!
     const waitingToast = toast({
       title: "Đang xử lý...",
       description: "AI đang tạo ảnh thời trang cho bạn, vui lòng chờ trong giây lát.",
@@ -51,7 +53,7 @@ const Index = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          image: selectedImage, // base64 string có header data:image/...
+          image: selectedImage,
           style: selectedStyle,
           quantity: imageQuantity,
         }),
@@ -64,20 +66,46 @@ const Index = () => {
       // Nhận response JSON
       const data = await response.json();
 
-      // n8n trả về: { data: 'base64string' } hoặc { data: [array of base64] }
+      // Debug giá trị trả về từ webhook
+      console.log("[DEBUG] webhook trả về:", data);
+
       let images: string[] = [];
       if (Array.isArray(data.data)) {
-        images = data.data.map((img: string) => "data:image/png;base64," + img);
+        images = data.data.map((img: string, idx) => {
+          const trimmed = (img || "").substring(0, 30);
+          console.log(`[DEBUG] ảnh trả về [${idx}]:`, trimmed, "(length:", img?.length, ")");
+          // Nếu chuỗi base64 quá ngắn, thay bằng placeholder
+          if (!img || img.length < 100) {
+            toast({
+              title: "Ảnh trả về lỗi",
+              description: `Ảnh #${idx+1} từ webhook không hợp lệ, dùng ảnh thay thế.`,
+              variant: "destructive",
+            });
+            return PLACEHOLDER_IMAGE;
+          }
+          // Đảm bảo luôn thêm header
+          return img.startsWith("data:image") ? img : "data:image/png;base64," + img;
+        });
       } else if (typeof data.data === "string") {
-        // Nếu backend chỉ trả về 1 ảnh
-        images = ["data:image/png;base64," + data.data];
+        const img = data.data;
+        const trimmed = (img || "").substring(0, 30);
+        console.log(`[DEBUG] ảnh trả về (string):`, trimmed, "(length:", img?.length, ")");
+        if (!img || img.length < 100) {
+          toast({
+            title: "Ảnh trả về lỗi",
+            description: "Ảnh từ webhook không hợp lệ, dùng ảnh thay thế.",
+            variant: "destructive",
+          });
+          images = [PLACEHOLDER_IMAGE];
+        } else {
+          images = [img.startsWith("data:image") ? img : "data:image/png;base64," + img];
+        }
       } else {
         throw new Error("Webhook trả về không đúng định dạng ảnh");
       }
 
       setResultImages(images);
 
-      // Đóng toast chờ (use .dismiss() instead of global dismiss)
       waitingToast.dismiss();
 
       toast({
