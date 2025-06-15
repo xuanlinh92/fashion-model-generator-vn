@@ -82,6 +82,7 @@ const Index = () => {
               "";
           }
 
+          // Remove repeated base64 prefix if any
           while (
             imgStr.startsWith("data:image") &&
             imgStr.slice(20, 36).includes("data:image")
@@ -90,8 +91,26 @@ const Index = () => {
             if (repPos > 0) imgStr = imgStr.slice(repPos);
             else break;
           }
-          console.log(`[DEBUG][array] Ảnh [${idx}]:`, imgStr ? imgStr.substring(0, 40) : "EMPTY", "(length:", imgStr.length, ")");
-          if (!imgStr || imgStr.length < 100) {
+
+          // Nếu là link công khai thì giữ nguyên, nếu base64 thì thêm prefix nếu thiếu
+          const isPublicUrl = /^https?:\/\//i.test(imgStr);
+          let displayImg = imgStr;
+
+          if (!isPublicUrl) {
+            // Nếu đã có prefix -> giữ nguyên, nếu thiếu -> thêm prefix base64
+            displayImg = imgStr.startsWith(prefix)
+              ? imgStr
+              : "data:image/png;base64," + imgStr;
+          }
+
+          // Debug
+          console.log(`[DEBUG][array] Ảnh [${idx}]:`, displayImg ? displayImg.substring(0, 40) : "EMPTY", "(length:", displayImg.length, ")");
+
+          // Kiểm tra hợp lệ ảnh (công khai hoặc base64 phải đủ dài)
+          if (
+            (!displayImg || displayImg.length < 100) ||
+            (!isPublicUrl && !displayImg.startsWith(prefix))
+          ) {
             toast({
               title: "Ảnh trả về lỗi",
               description: `Ảnh #${idx + 1} từ webhook không hợp lệ, dùng ảnh thay thế.`,
@@ -99,7 +118,8 @@ const Index = () => {
             });
             return PLACEHOLDER_IMAGE;
           }
-          return imgStr.startsWith(prefix) ? imgStr : "data:image/png;base64," + imgStr;
+
+          return displayImg;
         });
       } else if (typeof data.data === "string") {
         let imgStr = (data.data || "").trim();
@@ -111,9 +131,17 @@ const Index = () => {
           if (repPos > 0) imgStr = imgStr.slice(repPos);
           else break;
         }
-        const trimmed = imgStr.substring(0, 40);
-        console.log("[DEBUG][string] Ảnh:", trimmed, "(length:", imgStr.length, ")");
-        if (!imgStr || imgStr.length < 100) {
+        const isPublicUrl = /^https?:\/\//i.test(imgStr);
+        let displayImg = imgStr;
+        if (!isPublicUrl) {
+          displayImg = imgStr.startsWith(prefix)
+            ? imgStr
+            : "data:image/png;base64," + imgStr;
+        }
+        if (
+          (!displayImg || displayImg.length < 100) ||
+          (!isPublicUrl && !displayImg.startsWith(prefix))
+        ) {
           toast({
             title: "Ảnh trả về lỗi",
             description: "Ảnh từ webhook không hợp lệ, dùng ảnh thay thế.",
@@ -121,7 +149,7 @@ const Index = () => {
           });
           images = [PLACEHOLDER_IMAGE];
         } else {
-          images = [imgStr.startsWith(prefix) ? imgStr : "data:image/png;base64," + imgStr];
+          images = [displayImg];
         }
       } else {
         throw new Error("Webhook trả về không đúng định dạng ảnh");
