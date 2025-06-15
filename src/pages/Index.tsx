@@ -64,29 +64,33 @@ const Index = () => {
       }
 
       const data = await response.json();
-
-      // Debug giá trị trả về từ webhook
       console.log("[DEBUG] webhook trả về:", data);
 
       let images: string[] = [];
       const prefix = "data:image";
+
       if (Array.isArray(data.data)) {
-        images = data.data.map((img: string, idx) => {
-          let imgStr = (img || "").trim();
-          // Gỡ mọi trường hợp chuỗi có double prefix vô ý
+        images = data.data.map((item: any, idx: number) => {
+          let imgStr = '';
+          if (typeof item === 'string') {
+            imgStr = item.trim();
+          } else if (item && typeof item === 'object') {
+            imgStr =
+              (item.data && typeof item.data === "string" && item.data.trim()) ||
+              (item.base64 && typeof item.base64 === "string" && item.base64.trim()) ||
+              (item.image && typeof item.image === "string" && item.image.trim()) ||
+              "";
+          }
+
           while (
             imgStr.startsWith("data:image") &&
             imgStr.slice(20, 36).includes("data:image")
           ) {
-            // Tìm vị trí đầu của lần lặp lại prefix tiếp theo
             const repPos = imgStr.indexOf("data:image", 10);
             if (repPos > 0) imgStr = imgStr.slice(repPos);
             else break;
           }
-          // Check lại hợp lệ chưa
-          const trimmed = imgStr.substring(0, 40);
-          console.log(`[DEBUG][array] Ảnh [${idx}]:`, trimmed, "(length:", imgStr.length, ")");
-          // Xử lý ảnh lỗi
+          console.log(`[DEBUG][array] Ảnh [${idx}]:`, imgStr ? imgStr.substring(0, 40) : "EMPTY", "(length:", imgStr.length, ")");
           if (!imgStr || imgStr.length < 100) {
             toast({
               title: "Ảnh trả về lỗi",
@@ -99,7 +103,6 @@ const Index = () => {
         });
       } else if (typeof data.data === "string") {
         let imgStr = (data.data || "").trim();
-        // Gỡ double prefix (nếu có)
         while (
           imgStr.startsWith("data:image") &&
           imgStr.slice(20, 36).includes("data:image")
