@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import QuantitySelector from '@/components/QuantitySelector';
 import ResultGrid from '@/components/ResultGrid';
 import ImageModal from '@/components/ImageModal';
 
-const N8N_WEBHOOK_URL = "https://auto.ecomjob.vn/webhook-test/4f6511ec-1368-4a92-bf43-52b78ddee93b";
+const N8N_WEBHOOK_URL = "https://auto.ecomjob.vn/webhook/4f6511ec-1368-4a92-bf43-52b78ddee93b";
 
 const PLACEHOLDER_IMAGE =
   "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80";
