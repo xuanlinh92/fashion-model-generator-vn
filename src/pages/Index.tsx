@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Wand2, Download, Sparkles, Camera, Palette, Hash } from 'lucide-react';
+import { Upload, Wand2, Download, Sparkles, Camera, Palette, Hash, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -11,6 +12,7 @@ const Index = () => {
   const [imageQuantity, setImageQuantity] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [resultImages, setResultImages] = useState<string[]>([]);
+  const [expandedImage, setExpandedImage] = useState<{ src: string; index: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fashionStyles = [
@@ -104,6 +106,14 @@ const Index = () => {
     resultImages.forEach((image, index) => {
       setTimeout(() => downloadImage(image, index), index * 500);
     });
+  };
+
+  const openImageModal = (src: string, index: number) => {
+    setExpandedImage({ src, index });
+  };
+
+  const closeImageModal = () => {
+    setExpandedImage(null);
   };
 
   return (
@@ -288,17 +298,21 @@ const Index = () => {
                           <img
                             src={image}
                             alt={`Result ${index + 1}`}
-                            className="w-full aspect-square object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105"
+                            className="w-full aspect-square object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105 cursor-pointer"
                             style={{
                               filter: selectedStyle === 'vintage' ? 'sepia(0.5) contrast(1.2)' :
                                      selectedStyle === 'modern' ? 'contrast(1.1) brightness(1.1)' :
                                      selectedStyle === 'gothic' ? 'contrast(1.3) brightness(0.8)' :
                                      'none'
                             }}
+                            onClick={() => openImageModal(image, index)}
                           />
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
-                              onClick={() => downloadImage(image, index)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                downloadImage(image, index);
+                              }}
                               size="sm"
                               className="bg-white/90 text-purple-600 hover:bg-white shadow-lg"
                             >
@@ -332,11 +346,56 @@ const Index = () => {
                 <li>• Ảnh chụp toàn thân sẽ cho kết quả tốt hơn</li>
                 <li>• Thử nghiệm với nhiều phong cách khác nhau</li>
                 <li>• Tạo nhiều ảnh để có nhiều lựa chọn</li>
+                <li>• <strong>Nhấp vào ảnh kết quả để xem phóng to</strong></li>
               </ul>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      <Dialog open={!!expandedImage} onOpenChange={(open) => !open && closeImageModal()}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-transparent border-none shadow-none">
+          <div className="relative">
+            <DialogClose className="absolute -top-10 right-0 z-50 bg-white/90 rounded-full p-2 hover:bg-white transition-colors">
+              <X className="h-4 w-4 text-gray-800" />
+              <span className="sr-only">Đóng</span>
+            </DialogClose>
+            
+            {expandedImage && (
+              <div className="relative">
+                <img
+                  src={expandedImage.src}
+                  alt={`Expanded Result ${expandedImage.index + 1}`}
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                  style={{
+                    filter: selectedStyle === 'vintage' ? 'sepia(0.5) contrast(1.2)' :
+                           selectedStyle === 'modern' ? 'contrast(1.1) brightness(1.1)' :
+                           selectedStyle === 'gothic' ? 'contrast(1.3) brightness(0.8)' :
+                           'none'
+                  }}
+                />
+                
+                {/* Image info and download */}
+                <div className="absolute bottom-4 left-4 right-4 bg-black/80 text-white p-4 rounded-lg flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Ảnh #{expandedImage.index + 1}</p>
+                    <p className="text-sm text-gray-300">Phong cách: {selectedStyle}</p>
+                  </div>
+                  <Button
+                    onClick={() => downloadImage(expandedImage.src, expandedImage.index)}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Tải xuống
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
