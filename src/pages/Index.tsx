@@ -1,15 +1,16 @@
-
 import React, { useState, useRef } from 'react';
-import { Upload, Wand2, Download, Sparkles, Camera, Palette } from 'lucide-react';
+import { Upload, Wand2, Download, Sparkles, Camera, Palette, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>('');
+  const [imageQuantity, setImageQuantity] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [resultImage, setResultImage] = useState<string | null>(null);
+  const [resultImages, setResultImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fashionStyles = [
@@ -38,7 +39,7 @@ const Index = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
-        setResultImage(null);
+        setResultImages([]);
       };
       reader.readAsDataURL(file);
     }
@@ -60,7 +61,7 @@ const Index = () => {
         const reader = new FileReader();
         reader.onload = (event) => {
           setSelectedImage(event.target?.result as string);
-          setResultImage(null);
+          setResultImages([]);
         };
         reader.readAsDataURL(file);
       }
@@ -79,25 +80,30 @@ const Index = () => {
 
     setIsProcessing(true);
     
-    // Simulate AI processing
+    // Simulate AI processing for multiple images
     setTimeout(() => {
-      // For demo purposes, we'll show the same image with a filter effect
-      setResultImage(selectedImage);
+      // Generate multiple images based on quantity
+      const images = Array.from({ length: imageQuantity }, () => selectedImage);
+      setResultImages(images);
       setIsProcessing(false);
       toast({
         title: "Hoàn thành!",
-        description: "Ảnh thời trang của bạn đã được tạo thành công",
+        description: `${imageQuantity} ảnh thời trang đã được tạo thành công`,
       });
     }, 3000);
   };
 
-  const downloadResult = () => {
-    if (resultImage) {
-      const link = document.createElement('a');
-      link.href = resultImage;
-      link.download = `fashion-${selectedStyle}-${Date.now()}.jpg`;
-      link.click();
-    }
+  const downloadImage = (imageUrl: string, index: number) => {
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `fashion-${selectedStyle}-${index + 1}-${Date.now()}.jpg`;
+    link.click();
+  };
+
+  const downloadAllImages = () => {
+    resultImages.forEach((image, index) => {
+      setTimeout(() => downloadImage(image, index), index * 500);
+    });
   };
 
   return (
@@ -196,6 +202,29 @@ const Index = () => {
               </div>
             </Card>
 
+            {/* Quantity Selection */}
+            <Card className="p-6 bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Hash className="h-5 w-5 text-purple-600" />
+                Số lượng ảnh ({imageQuantity})
+              </h2>
+              
+              <div className="space-y-4">
+                <Slider
+                  value={[imageQuantity]}
+                  onValueChange={(value) => setImageQuantity(value[0])}
+                  max={6}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>1 ảnh</span>
+                  <span>6 ảnh</span>
+                </div>
+              </div>
+            </Card>
+
             {/* Process Button */}
             <Button
               onClick={processImage}
@@ -210,7 +239,7 @@ const Index = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <Wand2 className="h-4 w-4" />
-                  Tạo ảnh thời trang
+                  Tạo {imageQuantity} ảnh thời trang
                 </div>
               )}
             </Button>
@@ -219,47 +248,76 @@ const Index = () => {
           {/* Result Section */}
           <div className="space-y-6">
             <Card className="p-6 bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600" />
-                Kết quả
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  Kết quả {resultImages.length > 0 && `(${resultImages.length} ảnh)`}
+                </h2>
+                {resultImages.length > 1 && (
+                  <Button
+                    onClick={downloadAllImages}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Tải tất cả
+                  </Button>
+                )}
+              </div>
               
-              <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+              <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl">
                 {isProcessing ? (
-                  <div className="text-center space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto"></div>
-                    <div className="space-y-2">
-                      <p className="text-lg font-medium text-gray-700">Đang xử lý...</p>
-                      <p className="text-sm text-gray-500">AI đang tạo ảnh thời trang cho bạn</p>
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto"></div>
+                      <div className="space-y-2">
+                        <p className="text-lg font-medium text-gray-700">Đang xử lý...</p>
+                        <p className="text-sm text-gray-500">AI đang tạo {imageQuantity} ảnh thời trang cho bạn</p>
+                      </div>
                     </div>
                   </div>
-                ) : resultImage ? (
-                  <div className="w-full h-full relative">
-                    <img
-                      src={resultImage}
-                      alt="Result"
-                      className="w-full h-full object-cover rounded-lg shadow-lg"
-                      style={{
-                        filter: selectedStyle === 'vintage' ? 'sepia(0.5) contrast(1.2)' :
-                               selectedStyle === 'modern' ? 'contrast(1.1) brightness(1.1)' :
-                               selectedStyle === 'gothic' ? 'contrast(1.3) brightness(0.8)' :
-                               'none'
-                      }}
-                    />
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        onClick={downloadResult}
-                        size="sm"
-                        className="bg-white/90 text-purple-600 hover:bg-white shadow-lg"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                ) : resultImages.length > 0 ? (
+                  <div className="p-4">
+                    <div className={`grid gap-4 ${
+                      resultImages.length === 1 ? 'grid-cols-1' :
+                      resultImages.length <= 2 ? 'grid-cols-1 sm:grid-cols-2' :
+                      'grid-cols-2 lg:grid-cols-3'
+                    }`}>
+                      {resultImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={image}
+                            alt={`Result ${index + 1}`}
+                            className="w-full aspect-square object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105"
+                            style={{
+                              filter: selectedStyle === 'vintage' ? 'sepia(0.5) contrast(1.2)' :
+                                     selectedStyle === 'modern' ? 'contrast(1.1) brightness(1.1)' :
+                                     selectedStyle === 'gothic' ? 'contrast(1.3) brightness(0.8)' :
+                                     'none'
+                            }}
+                          />
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              onClick={() => downloadImage(image, index)}
+                              size="sm"
+                              className="bg-white/90 text-purple-600 hover:bg-white shadow-lg"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                            #{index + 1}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500">
-                    <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p>Ảnh thời trang sẽ xuất hiện tại đây</p>
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <p>Ảnh thời trang sẽ xuất hiện tại đây</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -273,6 +331,7 @@ const Index = () => {
                 <li>• Tránh ảnh quá tối hoặc quá sáng</li>
                 <li>• Ảnh chụp toàn thân sẽ cho kết quả tốt hơn</li>
                 <li>• Thử nghiệm với nhiều phong cách khác nhau</li>
+                <li>• Tạo nhiều ảnh để có nhiều lựa chọn</li>
               </ul>
             </Card>
           </div>
