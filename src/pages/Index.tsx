@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,32 +25,7 @@ const Index = () => {
     setResultImages([]);
   };
 
-  // --- HÀM GỬI WEBHOOK ---
-  const sendToWebhook = async (
-    image: string | null,
-    style: string,
-    qty: number
-  ) => {
-    if (!image || !style) return;
-    try {
-      await fetch(N8N_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image, // base64 string
-          style,
-          quantity: qty,
-        }),
-      });
-      // Không toast thành công/thất bại cho user vì nhiệm vụ này chỉ gửi webhook ngầm
-    } catch (err) {
-      // Không ảnh hưởng gì, chỉ log nếu cần
-      console.error("Webhook POST failed", err);
-    }
-  };
-
+  // --- HÀM GỬI WEBHOOK VÀ NHẬN KẾT QUẢ TRỰC TIẾP ---
   const processImage = async () => {
     if (!selectedImage || !selectedStyle) {
       toast({
@@ -60,28 +36,62 @@ const Index = () => {
       return;
     }
 
-    // Gửi webhook không blocking 
-    sendToWebhook(selectedImage, selectedStyle, imageQuantity);
-
     setIsProcessing(true);
-    
-    // Simulate AI processing for multiple images
-    setTimeout(() => {
-      // Generate multiple images based on quantity
-      const images = Array.from({ length: imageQuantity }, () => selectedImage);
+    setResultImages([]);
+
+    try {
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: selectedImage, // base64 string có header data:image/...
+          style: selectedStyle,
+          quantity: imageQuantity,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Webhook trả về lỗi");
+      }
+
+      // Nhận response JSON
+      const data = await response.json();
+
+      // n8n trả về: { data: 'base64string' } hoặc { data: [array of base64] }
+      let images: string[] = [];
+      if (Array.isArray(data.data)) {
+        images = data.data.map((img: string) => "data:image/png;base64," + img);
+      } else if (typeof data.data === "string") {
+        // Nếu backend chỉ trả về 1 ảnh
+        images = ["data:image/png;base64," + data.data];
+      } else {
+        throw new Error("Webhook trả về không đúng định dạng ảnh");
+      }
+
       setResultImages(images);
-      setIsProcessing(false);
+
       toast({
         title: "Hoàn thành!",
-        description: `${imageQuantity} ảnh thời trang đã được tạo thành công`,
+        description: `${images.length} ảnh thời trang đã được tạo thành công`,
       });
-    }, 3000);
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Lỗi",
+        description: "Không thể nhận kết quả từ webhook",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const downloadImage = (imageUrl: string, index: number) => {
     const link = document.createElement('a');
     link.href = imageUrl;
-    link.download = `fashion-${selectedStyle}-${index + 1}-${Date.now()}.jpg`;
+    link.download = `fashion-${selectedStyle}-${index + 1}-${Date.now()}.png`;
     link.click();
   };
 
@@ -186,3 +196,4 @@ const Index = () => {
 };
 
 export default Index;
+
