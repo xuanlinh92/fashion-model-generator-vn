@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { Upload, Camera } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -54,6 +55,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
     }
   };
 
+  // Optional: Debug log outside JSX for devs
+  if (selectedImage) {
+    console.log('DEBUG: Render selectedImage src:', selectedImage.slice(0, 30));
+  }
+
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -69,7 +75,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
       >
         {selectedImage ? (
           <div className="space-y-4">
-            {console.log('DEBUG: Render selectedImage src:', selectedImage.slice(0, 30))}
             <img
               src={selectedImage}
               alt="Selected"
@@ -104,3 +109,4 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
 };
 
 export default ImageUpload;
+
