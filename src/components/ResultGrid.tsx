@@ -61,12 +61,15 @@ const ResultGrid: React.FC<ResultGridProps> = ({
               'grid-cols-2 lg:grid-cols-3'
             }`}>
               {resultImages.map((image, index) => (
-                <div key={index} className="relative group">
+                <div key={index} className="relative group flex justify-center items-center bg-white rounded-lg shadow-lg min-h-[240px] min-w-[150px]">
                   <img
                     src={image}
                     alt={`Result ${index + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105 cursor-pointer"
+                    className="max-w-full max-h-[350px] object-contain rounded-lg transition-transform group-hover:scale-105 cursor-pointer bg-gray-100"
                     style={{
+                      background: "#f3f4f6",
+                      display: "block",
+                      margin: "auto",
                       filter: selectedStyle === 'vintage' ? 'sepia(0.5) contrast(1.2)' :
                              selectedStyle === 'modern' ? 'contrast(1.1) brightness(1.1)' :
                              selectedStyle === 'gothic' ? 'contrast(1.3) brightness(0.8)' :
@@ -107,3 +110,4 @@ const ResultGrid: React.FC<ResultGridProps> = ({
 };
 
 export default ResultGrid;
+
