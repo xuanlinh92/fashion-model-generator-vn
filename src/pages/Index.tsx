@@ -3,6 +3,7 @@ import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import { dismiss } from '@/components/ui/use-toast';
 import ImageUpload from '@/components/ImageUpload';
 import StyleSelector from '@/components/StyleSelector';
 import QuantitySelector from '@/components/QuantitySelector';
@@ -80,7 +81,7 @@ const Index = () => {
       setResultImages(images);
 
       // Tắt toast chờ
-      toast.dismiss(waitingToast.id);
+      dismiss(waitingToast.id);
 
       toast({
         title: "Hoàn thành!",
@@ -88,7 +89,7 @@ const Index = () => {
       });
     } catch (err: any) {
       console.error(err);
-      toast.dismiss(waitingToast.id);
+      dismiss(waitingToast.id);
       toast({
         title: "Lỗi",
         description: "Không thể nhận kết quả từ webhook",
