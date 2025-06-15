@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,8 @@ import StyleSelector from '@/components/StyleSelector';
 import QuantitySelector from '@/components/QuantitySelector';
 import ResultGrid from '@/components/ResultGrid';
 import ImageModal from '@/components/ImageModal';
+
+const N8N_WEBHOOK_URL = "https://auto.ecomjob.vn/webhook-test/4f6511ec-1368-4a92-bf43-52b78ddee93b";
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -23,6 +24,32 @@ const Index = () => {
     setResultImages([]);
   };
 
+  // --- HÀM GỬI WEBHOOK ---
+  const sendToWebhook = async (
+    image: string | null,
+    style: string,
+    qty: number
+  ) => {
+    if (!image || !style) return;
+    try {
+      await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image, // base64 string
+          style,
+          quantity: qty,
+        }),
+      });
+      // Không toast thành công/thất bại cho user vì nhiệm vụ này chỉ gửi webhook ngầm
+    } catch (err) {
+      // Không ảnh hưởng gì, chỉ log nếu cần
+      console.error("Webhook POST failed", err);
+    }
+  };
+
   const processImage = async () => {
     if (!selectedImage || !selectedStyle) {
       toast({
@@ -32,6 +59,9 @@ const Index = () => {
       });
       return;
     }
+
+    // Gửi webhook không blocking 
+    sendToWebhook(selectedImage, selectedStyle, imageQuantity);
 
     setIsProcessing(true);
     
