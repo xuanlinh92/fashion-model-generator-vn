@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -67,7 +68,8 @@ const Index = () => {
       console.log("[DEBUG] webhook trả về:", data);
 
       let webhookArray: any[] = [];
-      // Nếu data là object và có thuộc tính data là array
+
+      // Đảm bảo webhookArray luôn là mảng các item đầu ra
       if (Array.isArray(data?.data)) {
         webhookArray = data.data;
       } else if (Array.isArray(data)) {
@@ -84,12 +86,12 @@ const Index = () => {
       let images: string[] = [];
 
       images = webhookArray.map((item: any, idx: number) => {
-        // Trường hợp item là object chứa các trường khác nhau
         let imgStr = "";
+
+        // Lấy ra thuộc tính Image (hoặc các field khác nếu cần)
         if (typeof item === "string") {
           imgStr = item.trim();
         } else if (item && typeof item === "object") {
-          // Ưu tiên các trường thông dụng có thể chứa ảnh
           imgStr =
             (item.Image && typeof item.Image === "string" && item.Image.trim()) ||
             (item.image && typeof item.image === "string" && item.image.trim()) ||
@@ -109,9 +111,11 @@ const Index = () => {
           else break;
         }
 
+        // Nếu là link công khai thì dùng luôn
         const isPublicUrl = /^https?:\/\//i.test(imgStr);
         let displayImg = imgStr;
 
+        // Nếu là base64, đảm bảo prefix có mặt
         if (!isPublicUrl) {
           displayImg = imgStr.startsWith(prefix) ? imgStr : "data:image/png;base64," + imgStr;
         }
@@ -119,7 +123,7 @@ const Index = () => {
         // Debug log
         console.log(`[DEBUG][array] Ảnh [${idx}]:`, displayImg ? displayImg.substring(0, 40) : "EMPTY", "(length:", displayImg.length, ")");
 
-        // Kiểm tra hợp lệ ảnh (công khai hoặc base64 phải đủ dài)
+        // Kiểm tra hợp lệ ảnh (bắt buộc phải có và có độ dài hợp lý)
         if (
           (!displayImg || displayImg.length < 100) ||
           (!isPublicUrl && !displayImg.startsWith(prefix))
