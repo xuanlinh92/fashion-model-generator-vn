@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Upload, Camera, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -78,22 +77,28 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
         onClick={() => fileInputRef.current?.click()}
       >
         {selectedImage ? (
-          <div className="relative group space-y-4 flex flex-col items-center">
-            <img
-              src={selectedImage}
-              alt="Selected"
-              className="max-h-64 mx-auto rounded-lg shadow-lg"
-            />
-            {/* Nút X xoá ảnh */}
-            <button
-              className="absolute top-2 right-2 z-10 opacity-80 group-hover:opacity-100 bg-white/70 rounded-full p-1 transition hover:bg-red-100 hover:text-red-600 text-gray-500"
-              onClick={handleRemoveImage}
-              type="button"
-              aria-label="Xoá ảnh"
-              tabIndex={0}
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className="relative flex flex-col items-center justify-center space-y-4">
+            {/* Bọc ảnh trong div để làm mốc vị trí cho button */}
+            <div className="relative inline-block">
+              <img
+                src={selectedImage}
+                alt="Selected"
+                className="max-h-64 mx-auto rounded-lg shadow-lg"
+              />
+              <button
+                className="absolute top-0 right-0 z-10 opacity-80 bg-white/80 rounded-full p-1 m-[-10px] translate-x-1/2 -translate-y-1/2 transition hover:bg-red-100 hover:text-red-600 text-gray-500"
+                onClick={handleRemoveImage}
+                type="button"
+                aria-label="Xoá ảnh"
+                tabIndex={0}
+                style={{
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.06)',
+                  lineHeight: 0,
+                }}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
             <p className="text-sm text-gray-600">Nhấp để thay đổi ảnh</p>
           </div>
         ) : (
@@ -123,4 +128,3 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
 };
 
 export default ImageUpload;
-
