@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Upload, Camera } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -23,9 +22,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
         });
         return;
       }
-      
       const reader = new FileReader();
       reader.onload = (e) => {
+        console.log('DEBUG: Base64 string header:', String(e.target?.result).slice(0, 30));
         onImageSelect(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -47,6 +46,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
+          console.log('DEBUG (Drop): Base64 string header:', String(event.target?.result).slice(0,30));
           onImageSelect(event.target?.result as string);
         };
         reader.readAsDataURL(file);
@@ -69,6 +69,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ selectedImage, onImageSelect 
       >
         {selectedImage ? (
           <div className="space-y-4">
+            {console.log('DEBUG: Render selectedImage src:', selectedImage.slice(0, 30))}
             <img
               src={selectedImage}
               alt="Selected"
