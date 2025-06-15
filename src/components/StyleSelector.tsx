@@ -9,19 +9,19 @@ interface StyleSelectorProps {
   onStyleChange: (style: string) => void;
 }
 
-// Việt hóa các lựa chọn phong cách
+// Các lựa chọn bối cảnh quay lại tiếng Anh (theo danh sách yêu cầu)
 const fashionStyles = [
-  { id: 'studio-soft-light', name: 'Phòng studio ánh sáng nhẹ', description: '' },
-  { id: 'studio-minimal-backdrop', name: 'Studio nền tối giản', description: '' },
-  { id: 'luxury-cafe', name: 'Quán cà phê sang trọng', description: '' },
-  { id: 'shopping-mall', name: 'Trung tâm thương mại', description: '' },
-  { id: 'garden', name: 'Khu vườn', description: '' },
-  { id: 'park', name: 'Công viên', description: '' },
-  { id: 'mansion', name: 'Biệt thự sang trọng', description: '' },
-  { id: 'urban-street', name: 'Phố đi bộ cao cấp', description: '' },
-  { id: 'sea', name: 'Bên bờ biển', description: '' },
-  { id: 'homestay', name: 'Homestay trong nhà', description: '' },
-  { id: 'apartment', name: 'Căn hộ tối giản', description: '' },
+  { id: 'studio-soft-light', name: 'Studio with soft lighting', description: '' },
+  { id: 'studio-minimal-backdrop', name: 'Studio with minimal backdrop', description: '' },
+  { id: 'luxury-cafe', name: 'Luxurious outdoor cafe', description: '' },
+  { id: 'shopping-mall', name: 'Shopping mall', description: '' },
+  { id: 'garden', name: 'The garden', description: '' },
+  { id: 'park', name: 'The park', description: '' },
+  { id: 'mansion', name: 'The mansion', description: '' },
+  { id: 'urban-street', name: 'Upscale urban street', description: '' },
+  { id: 'sea', name: 'Beside the Sea', description: '' },
+  { id: 'homestay', name: 'In door Homestay', description: '' },
+  { id: 'apartment', name: 'Minimalist Apartment', description: '' },
 ];
 
 const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyle, onStyleChange }) => {
@@ -36,7 +36,6 @@ const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyle, onStyleCha
         <Palette className="h-5 w-5 text-purple-600" />
         Chọn Bối Cảnh Thời Trang
       </h2>
-      
       <Select value={selectedStyle} onValueChange={onStyleChange}>
         <SelectTrigger className="w-full h-12 bg-white border-purple-200 focus:ring-purple-500">
           <SelectValue placeholder="Chọn bối cảnh..." />
@@ -55,7 +54,6 @@ const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyle, onStyleCha
           ))}
         </SelectContent>
       </Select>
-      
       {selectedStyle && (
         <div className="mt-3 p-3 bg-purple-50 rounded-lg">
           <p className="text-sm text-purple-700">
@@ -68,4 +66,3 @@ const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyle, onStyleCha
 };
 
 export default StyleSelector;
-
