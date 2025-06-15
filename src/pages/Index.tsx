@@ -3,7 +3,6 @@ import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { dismiss } from '@/components/ui/use-toast';
 import ImageUpload from '@/components/ImageUpload';
 import StyleSelector from '@/components/StyleSelector';
 import QuantitySelector from '@/components/QuantitySelector';
@@ -43,8 +42,6 @@ const Index = () => {
     const waitingToast = toast({
       title: "Đang xử lý...",
       description: "AI đang tạo ảnh thời trang cho bạn, vui lòng chờ trong giây lát.",
-      // Để mặc định variant, toast sẽ không tự động tắt
-      // Không có timeout (mặc định với custom toast shadcn là manual dismiss)
     });
 
     try {
@@ -80,8 +77,8 @@ const Index = () => {
 
       setResultImages(images);
 
-      // Tắt toast chờ
-      dismiss(waitingToast.id);
+      // Đóng toast chờ (use .dismiss() instead of global dismiss)
+      waitingToast.dismiss();
 
       toast({
         title: "Hoàn thành!",
@@ -89,7 +86,7 @@ const Index = () => {
       });
     } catch (err: any) {
       console.error(err);
-      dismiss(waitingToast.id);
+      waitingToast.dismiss();
       toast({
         title: "Lỗi",
         description: "Không thể nhận kết quả từ webhook",
