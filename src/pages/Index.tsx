@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Wand2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +38,14 @@ const Index = () => {
     setIsProcessing(true);
     setResultImages([]);
 
+    // Hiện toast chờ, lưu lại id để tắt sau khi có kết quả!
+    const waitingToast = toast({
+      title: "Đang xử lý...",
+      description: "AI đang tạo ảnh thời trang cho bạn, vui lòng chờ trong giây lát.",
+      // Để mặc định variant, toast sẽ không tự động tắt
+      // Không có timeout (mặc định với custom toast shadcn là manual dismiss)
+    });
+
     try {
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
@@ -72,12 +79,16 @@ const Index = () => {
 
       setResultImages(images);
 
+      // Tắt toast chờ
+      toast.dismiss(waitingToast.id);
+
       toast({
         title: "Hoàn thành!",
         description: `${images.length} ảnh thời trang đã được tạo thành công`,
       });
     } catch (err: any) {
       console.error(err);
+      toast.dismiss(waitingToast.id);
       toast({
         title: "Lỗi",
         description: "Không thể nhận kết quả từ webhook",
@@ -196,4 +207,3 @@ const Index = () => {
 };
 
 export default Index;
-
