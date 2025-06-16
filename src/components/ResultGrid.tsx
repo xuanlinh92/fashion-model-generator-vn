@@ -44,13 +44,12 @@ const ResultGrid: React.FC<ResultGridProps> = ({
       
       <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl relative">
         {isProcessing ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto"></div>
-              <div className="space-y-2">
-                <p className="text-lg font-medium text-gray-700">Đang xử lý...</p>
-                <p className="text-sm text-gray-500">AI đang tạo {imageQuantity} ảnh thời trang cho bạn</p>
-              </div>
+          // Căn giữa phần đang xử lý cả dọc lẫn ngang, giống với placeholder
+          <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
+            <div className="space-y-2">
+              <p className="text-lg font-medium text-gray-700">Đang xử lý...</p>
+              <p className="text-sm text-gray-500">AI đang tạo {imageQuantity} ảnh thời trang cho bạn</p>
             </div>
           </div>
         ) : resultImages.length > 0 ? (
@@ -109,4 +108,3 @@ const ResultGrid: React.FC<ResultGridProps> = ({
 };
 
 export default ResultGrid;
-
