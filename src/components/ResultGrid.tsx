@@ -44,7 +44,7 @@ const ResultGrid: React.FC<ResultGridProps> = ({
       
       <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl relative">
         {isProcessing ? (
-          <div className="h-full flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto"></div>
               <div className="space-y-2">
