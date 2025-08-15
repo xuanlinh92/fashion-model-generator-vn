@@ -42,14 +42,15 @@ const ResultGrid: React.FC<ResultGridProps> = ({
         )}
       </div>
       
-      <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl relative">
+      <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl">
         {isProcessing ? (
-          // Căn giữa phần đang xử lý cả dọc lẫn ngang, giống với placeholder
-          <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
-            <div className="space-y-2">
-              <p className="text-lg font-medium text-gray-700">Đang xử lý...</p>
-              <p className="text-sm text-gray-500">AI đang tạo {imageQuantity} ảnh thời trang cho bạn</p>
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto"></div>
+              <div className="space-y-2">
+                <p className="text-lg font-medium text-gray-700">Đang xử lý...</p>
+                <p className="text-sm text-gray-500">AI đang tạo {imageQuantity} ảnh thời trang cho bạn</p>
+              </div>
             </div>
           </div>
         ) : resultImages.length > 0 ? (
@@ -96,10 +97,11 @@ const ResultGrid: React.FC<ResultGridProps> = ({
             </div>
           </div>
         ) : (
-          // Căn giữa icon và text cả dọc lẫn ngang, chiếm toàn bộ height khung kết quả
-          <div className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none">
-            <Sparkles className="h-16 w-16 mb-4 text-gray-400" />
-            <p className="text-base text-gray-500">Ảnh thời trang sẽ xuất hiện tại đây</p>
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p>Ảnh thời trang sẽ xuất hiện tại đây</p>
+            </div>
           </div>
         )}
       </div>
@@ -108,3 +110,4 @@ const ResultGrid: React.FC<ResultGridProps> = ({
 };
 
 export default ResultGrid;
+
