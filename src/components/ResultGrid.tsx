@@ -42,7 +42,7 @@ const ResultGrid: React.FC<ResultGridProps> = ({
         )}
       </div>
       
-      <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl">
+      <div className="min-h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl relative">
         {isProcessing ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center space-y-4">
@@ -97,11 +97,10 @@ const ResultGrid: React.FC<ResultGridProps> = ({
             </div>
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p>Ảnh thời trang sẽ xuất hiện tại đây</p>
-            </div>
+          // Căn giữa icon và text cả dọc lẫn ngang, chiếm toàn bộ height khung kết quả
+          <div className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none">
+            <Sparkles className="h-16 w-16 mb-4 text-gray-400" />
+            <p className="text-base text-gray-500">Ảnh thời trang sẽ xuất hiện tại đây</p>
           </div>
         )}
       </div>
