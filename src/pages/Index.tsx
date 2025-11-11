@@ -63,22 +63,61 @@ const Index = () => {
         throw new Error("Webhook trả về lỗi");
       }
 
-      const data = await response.json();
-      console.log("[DEBUG] webhook trả về:", data);
+      // Parse response safely (supports JSON, text, base64 image or URL)
+      const contentType = response.headers.get("content-type") || "";
+      let data: any = null;
+      let rawText = "";
+      try {
+        if (contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          rawText = await response.text();
+        }
+      } catch (parseErr) {
+        try {
+          rawText = await response.clone().text();
+        } catch {}
+      }
+      console.log("[DEBUG] webhook rawText:", rawText?.slice(0, 200));
+      console.log("[DEBUG] webhook data:", data);
 
       let webhookArray: any[] = [];
 
-      // Đảm bảo webhookArray luôn là mảng các item đầu ra
-      if (Array.isArray(data?.data)) {
-        webhookArray = data.data;
-      } else if (Array.isArray(data)) {
-        webhookArray = data;
-      } else if (typeof data.data === "object" && data.data !== null) {
-        webhookArray = [data.data];
-      } else if (typeof data === "object" && data !== null) {
-        webhookArray = [data];
+      const pushFromData = (d: any) => {
+        if (Array.isArray(d?.data)) {
+          webhookArray = d.data;
+        } else if (Array.isArray(d)) {
+          webhookArray = d;
+        } else if (typeof d?.data === "object" && d.data !== null) {
+          webhookArray = [d.data];
+        } else if (typeof d === "object" && d !== null) {
+          webhookArray = [d];
+        }
+      };
+
+      if (data !== null) {
+        pushFromData(data);
       } else {
-        throw new Error("Webhook trả về không đúng định dạng ảnh");
+        const trimmed = (rawText || "").trim();
+        if (!trimmed) {
+          throw new Error("Webhook trả về rỗng (empty body)");
+        }
+        if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            pushFromData(parsed);
+          } catch (e) {
+            throw new Error("Webhook trả về JSON không hợp lệ");
+          }
+        } else if (/^data:image/i.test(trimmed) || /^https?:\/\//i.test(trimmed)) {
+          webhookArray = [trimmed];
+        } else {
+          throw new Error("Webhook trả về định dạng không hỗ trợ");
+        }
+      }
+
+      if (!Array.isArray(webhookArray) || webhookArray.length === 0) {
+        throw new Error("Không tìm thấy ảnh trong phản hồi webhook");
       }
 
       const prefix = "data:image";
@@ -159,7 +198,7 @@ const Index = () => {
       waitingToast.dismiss();
       toast({
         title: "Lỗi",
-        description: "Không thể nhận kết quả từ webhook",
+        description: `Không thể nhận kết quả từ webhook: ${err?.message || 'Lỗi không xác định'}`,
         variant: "destructive",
       });
     } finally {
